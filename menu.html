@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Miras Restoran | Dijital Gastronomi Deneyimi</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600&family=Playfair+Display:ital@0;1&family=Allura&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+/* CSS DEĞİŞKENLERİ */
+:root {
+  --bg-color: #080808; 
+  --text-color: #f4f4f4;
+  --panel-bg: #111111;
+  --input-bg: #1a1a1a;
+  --border-color: #262626;
+  --primary-color: #c9a66b; 
+  --sub-text: #888888;
+}
+
+body.light {
+  --bg-color: #f8f8f8;
+  --text-color: #111111;
+  --panel-bg: #ffffff;
+  --input-bg: #eeeeee;
+  --border-color: #dddddd;
+  --primary-color: #a8854a;
+  --sub-text: #666666;
+}
+
+/* TEMEL AYARLAR */
+*{ margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; cursor: none; }
+
+*:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 4px; }
+
+body{
+  background: var(--bg-color);
+  color: var(--text-color);
+  font-family: 'Poppins', sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+  transition: background .4s, color .4s;
+}
+
+/* SİNEMATİK FİLM GRENİ (FILM GRAIN) */
+.film-grain {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  pointer-events: none;
+  z-index: 999998;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* SCROLL İLERLEME ÇUBUĞU */
+.scroll-progress-bar {
+  position: fixed;
+  top: 0; left: 0; height: 3px;
+  background: var(--primary-color);
+  width: 0%;
+  z-index: 1000000;
+  transition: width 0.1s ease-out;
+}
+
+/* PRELOADER */
+#preloader {
+  position: fixed; inset: 0; background: var(--bg-color);
+  z-index: 999999; display: flex; justify-content: center; align-items: center;
+  transition: transform 1s cubic-bezier(0.77, 0, 0.175, 1);
+}
+#preloader .logo { animation: pulse 2s infinite; font-family: 'Playfair Display', serif; font-size: 30px; letter-spacing: 10px;}
+.preloader-hide { transform: translateY(-100%); }
+@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; transform: scale(1.05);} }
+
+/* CUSTOM CURSOR */
+.custom-cursor {
+  position: fixed; top: 0; left: 0; width: 10px; height: 10px;
+  background: var(--primary-color); border-radius: 50%;
+  pointer-events: none; z-index: 99999;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s, height 0.3s, background 0.3s;
+  mix-blend-mode: difference;
+}
+.custom-cursor.hovered {
+  width: 50px; height: 50px; background: transparent; border: 1px solid var(--primary-color);
+}
+.custom-cursor.magnetic-active {
+  width: 20px; height: 20px; background: var(--primary-color); mix-blend-mode: normal;
+}
+
+/* SCROLL REVEAL */
+.reveal { opacity: 0; transform: translateY(40px); transition: all 1s cubic-bezier(0.25, 1, 0.5, 1); }
+.reveal.active { opacity: 1; transform: translateY(0); }
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+
+/* HEADER & MOBİL MENÜ */
+header {
+  position:fixed; top:0; width:100%; padding:25px 8%;
+  display:flex; justify-content:space-between; align-items:center;
+  background:rgba(8, 8, 8, 0.80); backdrop-filter:blur(20px);
+  z-index:1000; border-bottom: 1px solid rgba(255,255,255,0.03);
+  transition: all 0.4s;
+}
+body.light header { background:rgba(248, 248, 248, 0.9); border-bottom: 1px solid rgba(0,0,0,0.05); }
+
+.logo { font-size:22px; font-weight:300; letter-spacing: 6px; text-transform: uppercase; color: var(--text-color); }
+.logo span { color: var(--primary-color); font-weight: 500; }
+
+nav { display:flex; align-items:center; gap:30px; }
+nav a { color: var(--text-color); text-decoration:none; font-weight: 300; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; transition: 0.3s; position: relative;}
+nav a::after { content: ''; position: absolute; bottom: -5px; left: 0; width: 0; height: 1px; background: var(--primary-color); transition: 0.3s; }
+nav a:hover::after { width: 100%; }
+nav a:hover { color: var(--primary-color); }
+
+.hamburger { display: none; cursor: pointer; color: var(--text-color); font-size: 24px; border: none; background: transparent; }
+
+.reservation-btn {
+  background: transparent; color: var(--primary-color);
+  padding:10px 25px; font-weight:400; font-size: 13px; letter-spacing: 2px;
+  text-transform: uppercase; border: 1px solid var(--primary-color); transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  display: inline-block;
+}
+.reservation-btn:hover { background: var(--primary-color); color: var(--bg-color); }
+
+.theme-btn { background: transparent; color: var(--text-color); padding:8px; border:none; font-size:18px; transition: transform 0.3s;}
+.theme-btn:hover { transform: rotate(45deg); }
+
+/* HERO SİNEMATİK */
+.hero { position: relative; height: 100vh; display: flex; justify-content: center; align-items: center; text-align: center; padding: 20px; overflow: hidden; }
+.hero-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: url("https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1920&q=80") center/cover; z-index: -2; animation: slowZoom 30s linear infinite alternate; transform-origin: center; }
+.hero-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(8,8,8,0.3) 0%, var(--bg-color) 100%); z-index: -1; }
+@keyframes slowZoom { 0% { transform: scale(1); } 100% { transform: scale(1.15); } }
+
+.hero-content { position: relative; z-index: 1; }
+.hero h1 { font-family: 'Playfair Display', serif; font-size: 85px; font-weight: 400; letter-spacing: 4px; color: var(--primary-color); margin-bottom: 20px; font-style: italic; text-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.hero p { font-size: 14px; font-weight: 300; letter-spacing: 8px; text-transform: uppercase; margin-bottom: 50px; color: var(--text-color); }
+
+.btn { display:inline-block; padding:18px 45px; background: var(--primary-color); color: var(--bg-color); font-weight:400; letter-spacing: 2px; text-transform: uppercase; font-size: 13px; border:none; transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
+.btn:hover { background: var(--text-color); }
+
+/* SECTIONS */
+section { padding:150px 8%; }
+.section-title { text-align:center; font-size:32px; font-weight: 200; letter-spacing: 8px; text-transform: uppercase; margin-bottom:40px; color: var(--text-color); }
+.section-title span { color: var(--primary-color); }
+
+/* MICHELIN ALINTI */
+.quote-section { background: var(--panel-bg); padding: 120px 8%; text-align: center; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); }
+.quote-section h2 { font-family: 'Playfair Display', serif; font-size: 42px; font-style: italic; color: var(--primary-color); max-width: 800px; margin: 0 auto 30px auto; line-height: 1.4; }
+.quote-section cite { font-size: 13px; font-weight: 300; letter-spacing: 4px; text-transform: uppercase; color: var(--sub-text); }
+
+/* MONTEVERDI ANA TABAĞI */
+.monteverdi-showcase { display: flex; align-items: center; justify-content: center; gap: 80px; max-width: 1000px; margin: 0 auto 100px auto; flex-wrap: wrap; }
+.rotating-wrapper { position: relative; width: 380px; height: 380px; display: flex; justify-content: center; align-items: center; }
+.rotating-text { position: absolute; width: 100%; height: 100%; animation: spinText 20s linear infinite; z-index: 1; }
+@keyframes spinText { 100% { transform: rotate(360deg); } }
+.center-plate { width: 240px; height: 240px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 50px rgba(0,0,0,0.9); z-index: 2; transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1); }
+.rotating-wrapper:hover .center-plate { transform: scale(1.08); }
+.showcase-info { max-width: 450px; }
+.showcase-info h3 { font-family: 'Playfair Display', serif; font-size: 44px; color: var(--text-color); margin-bottom: 15px; font-style: italic; }
+.showcase-info p { color: var(--sub-text); font-size: 15px; font-weight: 300; margin-bottom: 20px; line-height: 1.8; }
+.price { color: var(--primary-color); font-weight: 400; font-size: 20px; letter-spacing: 1px; }
+
+/* DİNAMİK MANYETİK FİLTRELEME MENÜSÜ */
+.menu-filters { display: flex; justify-content: center; gap: 30px; margin-bottom: 70px; flex-wrap: wrap; }
+.filter-btn { background: transparent; border: none; color: var(--sub-text); font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; padding: 15px 30px; border-radius: 30px; border: 1px solid transparent; transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); display: inline-block; }
+.filter-btn:hover { color: var(--text-color); }
+.filter-btn.active { color: var(--primary-color); border: 1px solid var(--border-color); background: var(--panel-bg); }
+
+/* DİNAMİK KART LİSTESİ VE 3D TILT EFEKTİ */
+.menu-grid { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 30px; transition: opacity 0.4s ease; }
+.menu-grid.fade-out { opacity: 0; }
+.card { display: flex; align-items: center; gap: 40px; padding-bottom: 30px; border-bottom: 1px solid var(--border-color); transition: transform 0.4s ease; perspective: 1000px; }
+.card:last-child { border-bottom: none; }
+
+.card-img-wrapper { position: relative; width: 170px; height: 170px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); transform-style: preserve-3d; }
+.card-rotating-text { position: absolute; width: 100%; height: 100%; animation: spinText 20s linear infinite; z-index: 1; }
+.card img { width: 110px; height: 110px; object-fit: cover; border-radius: 50%; border: 1px solid rgba(255,255,255,0.05); filter: brightness(0.85); transition: 0.5s ease; z-index: 2;}
+.card:hover img { filter: brightness(1.1); transform: scale(1.05) translateZ(20px); box-shadow: 0 15px 35px rgba(0,0,0,0.6); }
+
+.card-info { flex: 1; }
+.card-info h3 { font-size: 20px; font-weight: 300; color: var(--text-color); margin-bottom: 5px; }
+.card-info p { color: var(--sub-text); font-size: 13px; font-weight: 300; line-height: 1.7; }
+
+/* ABOUT */
+.about { display:grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items:center; max-width: 1100px; margin: 0 auto; }
+.about-img-wrapper { overflow: hidden; border-radius: 4px; height: 650px; }
+.about img { width:100%; height: 120%; object-fit: cover; filter: grayscale(20%); transform: translateY(-10%); transition: transform 0.1s linear; } 
+.about-text h3 { font-family: 'Playfair Display', serif; font-size: 42px; font-style: italic; margin-bottom: 25px; color: var(--text-color); }
+.about-text p { font-size: 15px; font-weight: 300; color: var(--sub-text); margin-bottom: 20px; }
+
+/* ŞEF İMZASI */
+.signature { font-family: 'Allura', cursive; font-size: 38px; color: var(--primary-color); margin-top: 30px; transform: rotate(-3deg); opacity: 0.8; }
+
+/* ÇİFT YÖNLÜ ASİMETRİK GALERİ */
+#gallery { padding: 100px 0; overflow: hidden; }
+.gallery-container { display: flex; flex-direction: column; gap: 20px; }
+.gallery-container:hover .gallery-track { animation-play-state: paused; }
+.gallery-track { display: flex; gap: 20px; width: max-content; }
+.track-left { animation: marqueeLeft 45s linear infinite; }
+.track-right { animation: marqueeRight 45s linear infinite; }
+@keyframes marqueeLeft { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+@keyframes marqueeRight { 0% { transform: translateX(-50%); } 100% { transform: translateX(0); } }
+
+.gallery-item { height: 300px; border-radius: 4px; overflow: hidden; position: relative; flex-shrink: 0; }
+.gallery-item.wide { width: 450px; } .gallery-item.tall { width: 280px; } .gallery-item.xtra-wide { width: 550px; }
+.gallery-item img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%) brightness(0.6); transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1); cursor: pointer; }
+.gallery-item:hover img { filter: grayscale(0%) brightness(1.1); transform: scale(1.05); }
+
+/* FOOTER */
+footer { background: #050505; padding: 100px 8% 40px 8%; border-top: 1px solid var(--border-color); }
+body.light footer { background: #f0f0f0; }
+.footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 50px; margin-bottom: 60px; text-align: left; }
+.footer-col h4 { color: var(--primary-color); font-weight: 400; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; font-size: 14px; }
+.footer-col p { color: var(--sub-text); font-weight: 300; font-size: 14px; line-height: 2; }
+.social-icons { display: flex; gap: 20px; margin-top: 10px; }
+.social-icons a { color: var(--sub-text); font-size: 20px; text-decoration: none; transition: 0.3s; }
+.social-icons a:hover { color: var(--primary-color); transform: translateY(-3px);}
+.footer-bottom { text-align: center; padding-top: 30px; border-top: 1px solid rgba(255,255,255,0.05); color: var(--sub-text); font-weight: 300; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
+
+/* MODAL */
+.modal{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); backdrop-filter: blur(10px); z-index:9999; justify-content: center; align-items: center; }
+.modal-content.big{ width:100%; height:100%; display:flex; position: relative; background: transparent; }
+.close-modal-btn { position: absolute; top: 30px; right: 40px; background: transparent; border: none; color: var(--text-color); font-size: 40px; font-weight: 200; cursor: pointer; z-index: 10005; transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
+.close-modal-btn:hover { transform: rotate(90deg) scale(1.1); color: var(--primary-color); }
+.res-left{ width:45%; background: url('https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=1000&q=80') center/cover; display:flex; flex-direction:column; justify-content:center; padding:80px; position: relative; }
+.res-left::after { content: ''; position: absolute; inset: 0; background: rgba(8,8,8,0.85); }
+.res-left > * { position: relative; z-index: 2; }
+.res-left h1{ font-family: 'Playfair Display', serif; font-size:45px; font-style: italic; color: var(--primary-color); }
+.res-left p{ color: var(--text-color); margin-top:15px; font-weight: 300; letter-spacing: 2px; }
+.dots{ display:flex; gap:12px; margin-top:40px; }
+.dot{ width:8px; height:8px; background: var(--border-color); transition: 0.4s; }
+.dot.active{ background: var(--primary-color); box-shadow: 0 0 10px var(--primary-color); }
+.res-right{ width:55%; display:flex; align-items:center; justify-content:center; background: var(--bg-color); padding: 40px; }
+.step{ display:none; flex-direction:column; gap:25px; width:100%; max-width:450px; }
+.step.active{ display:flex; animation:fade .5s ease; }
+.step h3 { font-weight: 300; letter-spacing: 2px; text-transform: uppercase; color: var(--primary-color); margin-bottom: 10px; }
+.step input, .step select{ padding:18px; background: transparent; border:none; border-bottom: 1px solid var(--border-color); color: var(--text-color); width: 100%; font-size: 15px; font-weight: 300; transition: border-color 0.3s; }
+.step select option { background-color: var(--panel-bg); color: var(--text-color); }
+.step input:focus, .step select:focus { outline: none; border-bottom: 1px solid var(--primary-color); }
+.btn-group { display: flex; gap: 15px; margin-top: 20px; }
+.step button{ flex: 1; padding:16px; background: var(--text-color); border:none; color: var(--bg-color); font-weight:400; letter-spacing: 2px; text-transform: uppercase; font-size: 13px; transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); cursor: pointer; }
+.step button:hover { background: var(--primary-color); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.2);}
+.step button.prev-btn { background: transparent; color: var(--text-color); border: 1px solid var(--border-color); }
+.step button.prev-btn:hover { border-color: var(--text-color); background: transparent; box-shadow: none;}
+#summary { font-size: 15px; font-weight: 300; line-height: 2; background: var(--panel-bg); padding: 30px; border: 1px solid var(--border-color); color: var(--text-color); }
+@keyframes fade{ from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+
+/* RESPONSIVE & MOBİL MENÜ DETAYLARI */
+@media (max-width: 900px) {
+  .hamburger { display: block; }
+  nav { position: absolute; top: 100%; left: 0; width: 100%; background: var(--bg-color); flex-direction: column; padding: 20px 0; border-bottom: 1px solid var(--border-color); clip-path: polygon(0 0, 100% 0, 100% 0, 0 0); transition: clip-path 0.5s ease-in-out; }
+  nav.open { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+  .about { grid-template-columns: 1fr; }
+  .modal-content.big { flex-direction: column; }
+  .res-left { width: 100%; height: 30%; padding: 30px; text-align: center; align-items: center; }
+  .res-left h1 { font-size: 28px; }
+  .res-right { width: 100%; height: 70%; padding: 30px; align-items: flex-start; }
+  .hero h1 { font-size: 50px; letter-spacing: 6px; }
+  .monteverdi-showcase { flex-direction: column; text-align: center; gap: 40px; }
+  .rotating-wrapper { width: 280px; height: 280px; }
+  .center-plate { width: 170px; height: 170px; }
+  .card { flex-direction: column; text-align: center; gap: 20px;}
+  .card-img-wrapper { width: 140px; height: 140px; }
+  .card img { width: 95px; height: 95px; }
+  .gallery-item { height: 200px; }
+  .gallery-item.wide { width: 300px; } .gallery-item.tall { width: 200px; } .gallery-item.xtra-wide { width: 350px; }
+  .custom-cursor { display: none; } 
+  .film-grain { opacity: 0.02; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="film-grain"></div>
+
+<div class="scroll-progress-bar" id="progressBar"></div>
+
+<div id="preloader">
+  <div class="logo">MİRAS <span>RESTORAN</span></div>
+</div>
+
+<div class="custom-cursor"></div>
+
+<header>
+<div class="logo">MİRAS <span>RESTORAN</span></div>
+<button class="hamburger" aria-label="Menüyü Aç/Kapat" onclick="toggleMobileMenu()"><i class="fa-solid fa-bars"></i></button>
+<nav id="nav-menu">
+<a href="#menu" class="hover-target">Menü</a>
+<a href="#about" class="hover-target">Hikayemiz</a>
+<a href="#gallery" class="hover-target">Atmosfer</a>
+<button class="theme-btn hover-target" aria-label="Temayı Değiştir" onclick="toggleTheme()" id="themeIcon">🌖</button>
+<button class="reservation-btn hover-target magnetic-btn" onclick="openModal()">Rezervasyon</button>
+</nav>
+</header>
+
+<section class="hero">
+<div class="hero-bg"></div>
+<div class="hero-overlay"></div>
+<div class="hero-content reveal">
+<h1>Lezzet Sanatı</h1>
+<p>Topraktan Tabağa İmza Dokunuşlar</p>
+<button class="btn hover-target magnetic-btn" onclick="openModal()">Deneyimi Yaşa</button>
+</div>
+</section>
+
+<section class="quote-section reveal reveal-delay-1">
+  <h2>"Miras Restoran, lokal malzemelerin dünya standartlarında bir şefin ellerinde nasıl birer sanat eserine dönüştüğünün en zarif kanıtı."</h2>
+  <cite>— The Gastronomy Times, 2026</cite>
+</section>
+
+<section id="menu">
+<h2 class="section-title reveal"><span>Menü</span> Seçkisi</h2>
+
+<div class="monteverdi-showcase reveal reveal-delay-1">
+  <div class="rotating-wrapper hover-target">
+    <svg class="rotating-text" viewBox="0 0 500 500">
+      <defs><path id="circlePathMain" d="M 250, 250 m -180, 0 a 180, 180 0 1, 1 360, 0 a 180, 180 0 1, 1 -360, 0 " /></defs>
+      <text font-family="'Poppins', sans-serif" font-size="20" fill="var(--text-color)" font-weight="300" letter-spacing="8">
+        <textPath xlink:href="#circlePathMain">• LOMBARDY CLASSIC • ŞEFİN ÖZEL İMZA TABAĞI</textPath>
+      </text>
+    </svg>
+    <img src="https://images.unsplash.com/photo-1600803907087-f56d462fd26b?auto=format&fit=crop&w=600&q=80" alt="Siyah Trüflü Risotto" class="center-plate" loading="lazy">
+  </div>
+  <div class="showcase-info">
+    <p style="color:var(--primary-color); letter-spacing:4px; margin-bottom:5px; text-transform:uppercase; font-size:12px;">Degüstasyon</p>
+    <h3>Siyah Trüflü Risotto</h3>
+    <p>Odun ateşinde islenmiş yabani mantarlar, taze kış trüfü ve 36 ay dinlendirilmiş Parmesan. Şefimizin köklerine saygı duruşu niteliğinde, tamamen lokal malzemelerle hazırlanmış bir başyapıt.</p>
+    <div class="price">1.450 ₺</div>
+  </div>
+</div>
+
+<div class="menu-filters reveal reveal-delay-2">
+  <button class="filter-btn hover-target magnetic-btn active" data-filter="all">Tümü</button>
+  <button class="filter-btn hover-target magnetic-btn" data-filter="baslangic">Başlangıçlar</button>
+  <button class="filter-btn hover-target magnetic-btn" data-filter="ana-yemek">Ateşten</button>
+</div>
+
+<div class="menu-grid reveal reveal-delay-2" id="menu-grid">
+  </div>
+
+</section>
+
+<section id="about">
+<div class="about">
+<div class="about-img-wrapper reveal">
+  <img src="https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=800&q=80" alt="Chef plating food" id="parallax-img" loading="lazy">
+</div>
+<div class="about-text reveal reveal-delay-1">
+  <p style="color:var(--primary-color); letter-spacing:4px; text-transform:uppercase; font-size:12px; margin-bottom:10px;">Hikayemiz</p>
+  <h3>Gelenekten Geleceğe<br>Sanatsal Tabaklar</h3>
+  <p>Mutfağımızda, Anadolu'nun köklü tariflerini modern tekniklerle yeniden yorumluyoruz. Her malzemenin kendi doğal lezzetini ön plana çıkaran minimalist yaklaşımımızla, tabağınıza sadece bir yemek değil, bir hikaye sunuyoruz.</p>
+  <p>Lokal üreticilerden günlük olarak tedarik edilen mevsimsel ürünler, şefimizin vizyonuyla birleşerek sizi unutulmaz bir gastronomi yolculuğuna çıkarıyor.</p>
+  <div class="signature">Şef SEYMEN OKUMUŞ</div>
+   <div class="signature">Şef MERVAN KOÇ</div>
+</div>
+</div>
+</section>
+
+<section id="gallery">
+<h2 class="section-title reveal" style="margin-bottom: 40px;"><span>Atmosfer</span></h2>
+<div class="gallery-container reveal reveal-delay-1 hover-target">
+  <div class="gallery-track track-left">
+    <div class="gallery-item wide"><img src="https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=800&q=80" alt="Atmosphere" loading="lazy"></div>
+    <div class="gallery-item tall"><img src="https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&w=600&q=80" alt="Wine" loading="lazy"></div>
+    <div class="gallery-item xtra-wide"><img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1000&q=80" alt="Restaurant Table" loading="lazy"></div>
+    <div class="gallery-item tall"><img src="https://images.unsplash.com/photo-1544148103-0773bf10d330?auto=format&fit=crop&w=600&q=80" alt="Details" loading="lazy"></div>
+    <div class="gallery-item wide"><img src="https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=800&q=80" alt="Atmosphere" loading="lazy"></div>
+    <div class="gallery-item tall"><img src="https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&w=600&q=80" alt="Wine" loading="lazy"></div>
+    <div class="gallery-item xtra-wide"><img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1000&q=80" alt="Restaurant Table" loading="lazy"></div>
+    <div class="gallery-item tall"><img src="https://images.unsplash.com/photo-1544148103-0773bf10d330?auto=format&fit=crop&w=600&q=80" alt="Details" loading="lazy"></div>
+  </div>
+  <div class="gallery-track track-right">
+    <div class="gallery-item tall"><img src="https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=600&q=80" alt="Plating" loading="lazy"></div>
+    <div class="gallery-item xtra-wide"><img src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=1000&q=80" alt="Bar" loading="lazy"></div>
+    <div class="gallery-item tall"><img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=600&q=80" alt="Drink" loading="lazy"></div>
+    <div class="gallery-item wide"><img src="https://images.unsplash.com/photo-1525610553991-2bede1a236e2?auto=format&fit=crop&w=800&q=80" alt="Interior" loading="lazy"></div>
+    <div class="gallery-item tall"><img src="https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=600&q=80" alt="Plating" loading="lazy"></div>
+    <div class="gallery-item xtra-wide"><img src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=1000&q=80" alt="Bar" loading="lazy"></div>
+    <div class="gallery-item tall"><img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=600&q=80" alt="Drink" loading="lazy"></div>
+    <div class="gallery-item wide"><img src="https://images.unsplash.com/photo-1525610553991-2bede1a236e2?auto=format&fit=crop&w=800&q=80" alt="Interior" loading="lazy"></div>
+  </div>
+</div>
+</section>
+
+<footer>
+  <div class="footer-grid">
+    <div class="footer-col">
+      <div class="logo" style="margin-bottom: 20px;">MİRAS <span>RESTORAN</span></div>
+      <p>Modern gastronomi ile geleneksel<br>köklerin eşsiz buluşması.</p>
+    </div>
+    <div class="footer-col">
+      <h4>İletişim</h4>
+      <p>Beşiktaş, İstanbul, TR</p>
+      <p>info@mirasrestoran.com</p>
+      <p>+90 (212) 555 10 10</p>
+    </div>
+    <div class="footer-col">
+      <h4>Çalışma Saatleri</h4>
+      <p>Salı - Pazar: 17:00 - 00:00</p>
+      <p>Pazartesi: Kapalı</p>
+    </div>
+    <div class="footer-col">
+      <h4>Bizi Takip Edin</h4>
+      <div class="social-icons">
+        <a href="#" aria-label="Instagram" class="hover-target"><i class="fa-brands fa-instagram"></i></a>
+        <a href="#" aria-label="Twitter" class="hover-target"><i class="fa-brands fa-twitter"></i></a>
+        <a href="#" aria-label="Facebook" class="hover-target"><i class="fa-brands fa-facebook-f"></i></a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>Devoloper By EYP</p>
+  </div>
+</footer>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true">
+<div class="modal-content big">
+<button class="close-modal-btn hover-target magnetic-btn" aria-label="Kapat" onclick="closeModal()">×</button>
+<div class="res-left">
+<h1>Rezervasyon</h1>
+<p>Deneyiminizi planlayın</p>
+<div class="dots">
+<span class="dot active"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+</div>
+</div>
+<div class="res-right">
+<div class="step active">
+<h3>Misafir Bilgileri</h3>
+<input id="name" type="text" placeholder="Ad Soyad" aria-label="Ad Soyad">
+<input id="email" type="email" placeholder="E-posta Adresi" aria-label="E-posta">
+<div class="btn-group"><button class="hover-target magnetic-btn" onclick="next()">İlerle</button></div>
+</div>
+<div class="step">
+<h3>Tarih</h3>
+<input type="date" id="date" aria-label="Tarih Seçimi">
+<div class="btn-group">
+<button class="prev-btn hover-target magnetic-btn" onclick="prev()">Geri</button>
+<button class="hover-target magnetic-btn" onclick="next()">İlerle</button>
+</div>
+</div>
+<div class="step">
+<h3>Saat Seçimi</h3>
+<select id="time" aria-label="Saat Seçimi">
+<option value="19:00">19:00 (Akşam Servisi)</option>
+<option value="20:00">20:00 (Akşam Servisi)</option>
+<option value="21:00">21:00 (Akşam Servisi)</option>
+<option value="22:00">22:00 (Geç Servis)</option>
+</select>
+<div class="btn-group">
+<button class="prev-btn hover-target magnetic-btn" onclick="prev()">Geri</button>
+<button class="hover-target magnetic-btn" onclick="next()">İlerle</button>
+</div>
+</div>
+<div class="step">
+<h3>Onay</h3>
+<p id="summary"></p>
+<div class="btn-group">
+<button class="prev-btn hover-target magnetic-btn" onclick="prev()">Geri</button>
+<button class="hover-target magnetic-btn" onclick="submitForm()">Talebi Gönder</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+// --- AÇILIŞ (PRELOADER) & İMLEÇ ---
+// GÜVENLİK İÇİN DEĞİŞTİRİLDİ: DOMContentLoaded ve Timeout kullanıldı
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => document.getElementById('preloader').classList.add('preloader-hide'), 1200); 
+});
+
+// Telefondaki olası donmalara karşı yedek zamanlayıcı
+setTimeout(() => {
+  const preloader = document.getElementById('preloader');
+  if(preloader) preloader.classList.add('preloader-hide');
+}, 3000);
+
+const cursor = document.querySelector('.custom-cursor');
+document.addEventListener('mousemove', (e) => {
+  cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px';
+});
+
+function attachCursorEvents() {
+  document.querySelectorAll('.hover-target, a, button').forEach(item => {
+    item.addEventListener('mouseenter', () => cursor.classList.add('hovered'));
+    item.addEventListener('mouseleave', () => cursor.classList.remove('hovered'));
+  });
+}
+attachCursorEvents();
+
+// --- MANYETİK BUTONLAR (Magnetic Buttons) ---
+function attachMagneticEvents() {
+  const magnets = document.querySelectorAll('.magnetic-btn');
+  magnets.forEach(btn => {
+    btn.addEventListener('mousemove', function(e) {
+      const position = btn.getBoundingClientRect();
+      const x = e.pageX - position.left - position.width / 2;
+      const y = e.pageY - position.top - position.height / 2;
+      btn.style.transform = `translate(${x * 0.3}px, ${y * 0.5}px)`;
+    });
+    btn.addEventListener('mouseout', function() {
+      btn.style.transform = 'translate(0px, 0px)';
+    });
+  });
+}
+attachMagneticEvents();
+
+// --- SCROLL PROGRESS BAR ---
+window.addEventListener('scroll', () => {
+  const scrollTotal = document.documentElement.scrollTop;
+  const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  const scrollPercent = (scrollTotal / height) * 100;
+  document.getElementById('progressBar').style.width = scrollPercent + "%";
+});
+
+// --- MOBİL MENÜ & TEMA ---
+function toggleMobileMenu() { document.getElementById('nav-menu').classList.toggle('open'); }
+document.querySelectorAll('#nav-menu a').forEach(link => {
+  link.addEventListener('click', () => document.getElementById('nav-menu').classList.remove('open'));
+});
+
+function toggleTheme(){
+  document.body.classList.toggle("light");
+  document.getElementById("themeIcon").innerText = document.body.classList.contains("light") ? "🌘" : "🌖";
+}
+
+// --- DİNAMİK MENÜ & 3D TILT EFEKTİ ---
+const menuData = [
+  { id: 1, title: 'İsli Burrata Pugliese', desc: 'Kömür ateşinde közlenmiş çeri domatesler, soğuk sıkım zeytinyağı ve taze fesleğen tozu.', price: '520 ₺', category: 'baslangic', img: 'https://images.unsplash.com/photo-1608897013039-887f21d8c804?auto=format&fit=crop&w=400&q=80', svgText: '• İSLİ BURRATA PUGLIESE • İSLİ BURRATA PUGLIESE' },
+  { id: 2, title: 'Kuru Dinlendirilmiş Carpaccio', desc: '28 gün dry-aged dana bonfile, çıtır kapari, bebek roka ve limon emülsiyonu.', price: '650 ₺', category: 'baslangic', img: 'https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=400&q=80', svgText: '• DANA BONFİLE CARPACCIO • DANA BONFİLE CARPACCIO' },
+  { id: 3, title: 'Kömürde Dana Antrikot', desc: 'Meşe odununda mühürlenmiş antrikot, yanık soğan püresi ve kemik suyu sosu ile.', price: '1.800 ₺', category: 'ana-yemek', img: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=400&q=80', svgText: '• KÖMÜRDE DANA ANTRİKOT • KÖMÜRDE DANA ANTRİKOT' },
+  { id: 4, title: 'Izgara Deniz Levreği', desc: 'Fırınlanmış bebek patates, tütsülenmiş paprika ve kapari sos eşliğinde balık fileto.', price: '1.250 ₺', category: 'ana-yemek', img: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=400&q=80', svgText: '• IZGARA DENİZ LEVREĞİ • IZGARA DENİZ LEVREĞİ' }
+];
+
+const menuGrid = document.getElementById('menu-grid');
+const filterBtns = document.querySelectorAll('.filter-btn');
+
+function renderMenu(filterType = 'all') {
+  menuGrid.classList.add('fade-out'); 
+  setTimeout(() => {
+    menuGrid.innerHTML = '';
+    const filteredData = filterType === 'all' ? menuData : menuData.filter(item => item.category === filterType);
+    
+    filteredData.forEach(item => {
+      const cardHTML = `
+        <div class="card hover-target">
+          <div class="card-img-wrapper tilt-card">
+            <svg class="card-rotating-text" viewBox="0 0 500 500">
+              <defs><path id="circlePath${item.id}" d="M 250, 250 m -210, 0 a 210, 210 0 1, 1 420, 0 a 210, 210 0 1, 1 -420, 0 "/></defs>
+              <text font-family="'Poppins', sans-serif" font-size="42" fill="var(--text-color)" font-weight="300" letter-spacing="6">
+                <textPath xlink:href="#circlePath${item.id}">${item.svgText}</textPath>
+              </text>
+            </svg>
+            <img src="${item.img}" alt="${item.title}" loading="lazy">
+          </div>
+          <div class="card-info">
+            <h3>${item.title}</h3>
+            <p>${item.desc}</p>
+          </div>
+          <div class="price">${item.price}</div>
+        </div>
+      `;
+      menuGrid.innerHTML += cardHTML;
+    });
+    
+    menuGrid.classList.remove('fade-out'); 
+    attachCursorEvents(); 
+    attachTiltEvents(); 
+  }, 400); 
+}
+
+// 3D TILT EFEKTİ
+function attachTiltEvents() {
+  const tiltCards = document.querySelectorAll('.tilt-card');
+  tiltCards.forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const rotateX = ((y - centerY) / centerY) * -15; 
+      const rotateY = ((x - centerX) / centerX) * 15;
+      card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = `perspective(1000px) rotateX(0) rotateY(0)`;
+    });
+  });
+}
+
+filterBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    filterBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderMenu(btn.getAttribute('data-filter'));
+  });
+});
+renderMenu('all');
+
+// --- REZERVASYON MODÜLÜ ---
+let step = 0;
+const steps = document.querySelectorAll(".step");
+const dots = document.querySelectorAll(".dot");
+
+function openModal(){ document.getElementById("modal").style.display = "flex"; step = 0; show(); }
+function closeModal() { document.getElementById("modal").style.display = "none"; }
+function show(){
+  steps.forEach((s, i) => s.classList.toggle("active", i === step));
+  dots.forEach((d, i) => d.classList.toggle("active", i <= step));
+}
+
+function next(){
+  if (step === 0) {
+    const name = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim();
+    if(!name || !email) { alert("Lütfen adınızı ve e-postanızı doldurun."); return; }
+  }
+  if (step === 1) {
+    const date = document.getElementById("date").value;
+    if(!date) { alert("Lütfen bir tarih seçin."); return; }
+  }
+  if(step < steps.length - 1){ step++; show(); updateSummary(); }
+}
+function prev(){ if(step > 0){ step--; show(); } }
+
+function updateSummary(){
+  if(step === 3){
+    const name = document.getElementById("name").value;
+    const date = document.getElementById("date").value;
+    const time = document.getElementById("time").value;
+    const formattedDate = date.split("-").reverse().join(".");
+    document.getElementById("summary").innerHTML = `
+      Sayın <strong style="color:var(--primary-color)">${name}</strong>,<br>
+      Talebiniz alınmak üzeredir.<br><br>
+      Tarih: <strong>${formattedDate}</strong><br>
+      Saat: <strong>${time}</strong><br><br>
+      <span style="color:var(--sub-text); font-size:12px;">Masanızın kesinleşmesi için tarafınıza dönüş yapılacaktır.</span>
+    `;
+  }
+}
+function submitForm(){
+  alert("Rezervasyon talebiniz başarıyla alındı. Ekibimiz sizinle iletişime geçecektir.");
+  closeModal();
+  document.getElementById("name").value = ""; document.getElementById("email").value = ""; document.getElementById("date").value = "";
+  step = 0;
+}
+
+// --- SCROLL REVEAL & JS PARALLAX ---
+document.addEventListener('DOMContentLoaded', () => {
+  const reveals = document.querySelectorAll('.reveal');
+  const parallaxImg = document.getElementById('parallax-img');
+  
+  const revealOptions = { threshold: 0.15, rootMargin: "0px 0px -50px 0px" };
+  const revealOnScroll = new IntersectionObserver(function(entries, observer) {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('active');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, revealOptions);
+  reveals.forEach(reveal => revealOnScroll.observe(reveal));
+  
+  window.addEventListener('scroll', () => {
+    let scrollPos = window.scrollY;
+    if(parallaxImg) parallaxImg.style.transform = `translateY(${scrollPos * 0.05}px)`; 
+  });
+});
+</script>
+
+</body>
+</html>
